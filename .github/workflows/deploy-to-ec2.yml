@@ -25,7 +25,7 @@ jobs:
           npm install
           npm run build
 
-      - name: Upload build to EC2
+            - name: Upload build to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -37,7 +37,8 @@ jobs:
           chmod 600 private_key
 
           # Transfer build files to EC2 instance with host key checking disabled
-          scp -o StrictHostKeyChecking=no -i private_key -r ./build/* $EC2_USER@$EC2_HOST:$EC2_APP_DIR
+          scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i private_key -r ./build/* $EC2_USER@$EC2_HOST:$EC2_APP_DIR
+
 
       - name: Start Server with npm
         env:
