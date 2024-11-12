@@ -18,47 +18,36 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Configure SSH Key for EC2 Access
+      - name: Build React app
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          CI: false  # Ignore warnings as errors during build
         run: |
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | awk '{gsub(/\\n/,"\n")}1' > private_key
+          npm install
+          npm run build
+
+      - name: Upload build to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EC2_APP_DIR: ${{ secrets.EC2_APP_DIR }}
+        run: |
+          # Create a private key file for SSH
+          echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
 
-      - name: Debug: Verify SSH Connection to EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "echo 'SSH connection successful.'"
+          # Transfer build files to EC2 instance with host key checking disabled
+          scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i private_key -r ./build/* $EC2_USER@$EC2_HOST:$EC2_APP_DIR
 
-      - name: Clone Repository Directly on EC2
+      - name: Start Server with npm
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
-          GITHUB_REPO: "https://github.com/Ramgopalhyndavbollepalli/Compilance-Management.git"
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          # SSH into the EC2 instance and start the server
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
-            cd /home/ubuntu
-            rm -rf Compilance-Management
-            git clone $GITHUB_REPO
-            cd Compilance-Management
-            npm install
+            cd $EC2_APP_DIR
+            # Start the server with npm
+            npm start
           EOF
-
-      - name: Start Application on EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
-            cd /home/ubuntu/Compilance-Management
-            npm start &
-          EOF
-
-      - name: Final Debug: Check Running Processes on EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "ps aux | grep 'node'"
