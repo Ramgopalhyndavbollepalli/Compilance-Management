@@ -1,27 +1,29 @@
-name: Deploy Project to EC2
+name: Deploy to EC2
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the entire project repository from GitHub
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up Node.js environment on GitHub Actions runner
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '16'
 
-      # Upload the project files to EC2
-      - name: Upload project to EC2
+      - name: Build React app
+        run: |
+          npm install
+          npm run build
+
+      - name: Upload build to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -32,28 +34,17 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
 
-          # Transfer all project files to the EC2 instance
-          scp -i private_key -r ./* $EC2_USER@$EC2_HOST:$EC2_APP_DIR
+          # Transfer build files to EC2 instance with host key checking disabled
+          scp -o StrictHostKeyChecking=no -i private_key -r ./build/* $EC2_USER@$EC2_HOST:$EC2_APP_DIR
 
-      # Install dependencies and build the project on the EC2 instance
-      - name: Build and start project on EC2
+      - name: Restart Server (Optional)
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          EC2_APP_DIR: ${{ secrets.EC2_APP_DIR }}
         run: |
-          # SSH into the EC2 instance and install dependencies
-          ssh -i private_key $EC2_USER@$EC2_HOST << 'EOF'
-            # Navigate to the app directory
+          # SSH into the EC2 instance and restart any necessary services with host key checking disabled
+          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
             cd $EC2_APP_DIR
-
-            # Install project dependencies
-            npm install
-
-            # Build the project (if needed)
-            npm run build
-
-            # Start the app using PM2 or another process manager
             pm2 restart myapp || pm2 start npm --name "myapp" -- start
           EOF
