@@ -13,30 +13,69 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: SSH and Deploy
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Debug: Verify Node Version and Files
+        run: |
+          echo "Node version:"
+          node -v
+          echo "NPM version:"
+          npm -v
+          echo "Listing project files:"
+          ls -al
+
+      - name: Configure SSH Key for EC2 Access
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "Setting up SSH private key..."
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | awk '{gsub(/\\n/,"\n")}1' > private_key
+          chmod 600 private_key
+          echo "SSH key configured."
+
+      - name: Debug: Verify SSH Connection to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: "ubuntu"
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REPO_URL: "https://github.com/Ramgopalhyndavbollepalli/Compilance-Management.git"
-          EC2_APP_DIR: "/home/ubuntu/Compilance-Management"
+          EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          # Create the SSH private key file with newlines interpreted correctly
-          echo -e "$SSH_PRIVATE_KEY" > private_key
-          chmod 600 private_key
+          echo "Attempting SSH connection to EC2 instance..."
+          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "echo 'SSH connection successful.'"
 
-          # SSH into EC2 and pull the latest code, then start the app
+      - name: Clone Repository Directly on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          GITHUB_REPO: "https://github.com/Ramgopalhyndavbollepalli/Compilance-Management.git"
+        run: |
+          echo "Cloning repository on EC2 instance..."
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
-            # Clone the repository if it doesn't exist; otherwise, pull the latest changes
-            if [ ! -d "$EC2_APP_DIR" ]; then
-              git clone $REPO_URL $EC2_APP_DIR
-            else
-              cd $EC2_APP_DIR
-              git pull origin master
-            fi
-
-            # Install dependencies and start the application
-            cd $EC2_APP_DIR
+            cd /home/ubuntu
+            rm -rf Compilance-Management
+            git clone $GITHUB_REPO
+            cd Compilance-Management
             npm install
-            npm start
+            echo "Repository cloned and dependencies installed."
           EOF
+
+      - name: Start Application on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          echo "Starting application on EC2 instance..."
+          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
+            cd /home/ubuntu/Compilance-Management
+            npm start &
+            echo "Application started."
+          EOF
+          
+      - name: Final Debug: Check Running Processes on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          echo "Checking running processes on EC2 instance..."
+          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "ps aux | grep 'node'"
