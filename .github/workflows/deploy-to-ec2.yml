@@ -13,40 +13,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-
-      - name: Build React app
-        env:
-          CI: false  # Ignore warnings as errors during build
-        run: |
-          npm install
-          npm run build
-
-      - name: Upload build to EC2
+      - name: SSH and Deploy
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: "ubuntu"
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REPO_URL: "https://github.com/Ramgopalhyndavbollepalli/Compilance-Management.git"
           EC2_APP_DIR: "/home/ubuntu/Compilance-Management"
         run: |
-          # Create a private key file for SSH with newlines interpreted correctly
+          # Create the SSH private key file with newlines interpreted correctly
           echo -e "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
 
-          # Transfer build files to EC2 instance with host key checking disabled
-          scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i private_key -r ./build/* $EC2_USER@$EC2_HOST:$EC2_APP_DIR
-
-      - name: Start Server with npm
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: "ubuntu"
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # SSH into the EC2 instance and start the server
+          # SSH into EC2 and pull the latest code, then start the app
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
-            cd /home/ubuntu/Compilance-Management
+            # Clone the repository if it doesn't exist; otherwise, pull the latest changes
+            if [ ! -d "$EC2_APP_DIR" ]; then
+              git clone $REPO_URL $EC2_APP_DIR
+            else
+              cd $EC2_APP_DIR
+              git pull origin master
+            fi
+
+            # Install dependencies and start the application
+            cd $EC2_APP_DIR
+            npm install
             npm start
           EOF
