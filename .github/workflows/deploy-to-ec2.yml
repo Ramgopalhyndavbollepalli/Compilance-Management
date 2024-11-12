@@ -30,7 +30,7 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          EC2_APP_DIR: ${{ secrets.EC2_APP_DIR }}
+          EC2_APP_DIR: "/home/ubuntu/Compilance-Management"
         run: |
           # Create a private key file for SSH
           echo "$SSH_PRIVATE_KEY" > private_key
@@ -47,7 +47,6 @@ jobs:
         run: |
           # SSH into the EC2 instance and start the server
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
-            cd $EC2_APP_DIR
-            # Start the server with npm
+            cd /home/ubuntu/Compilance-Management
             npm start
           EOF
