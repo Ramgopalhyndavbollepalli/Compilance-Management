@@ -39,14 +39,15 @@ jobs:
           # Transfer build files to EC2 instance with host key checking disabled
           scp -o StrictHostKeyChecking=no -i private_key -r ./build/* $EC2_USER@$EC2_HOST:$EC2_APP_DIR
 
-      - name: Restart Server (Optional)
+      - name: Start Server with npm
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          # SSH into the EC2 instance and restart any necessary services with host key checking disabled
+          # SSH into the EC2 instance and start the server
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
             cd $EC2_APP_DIR
-            pm2 restart myapp || pm2 start npm --name "myapp" -- start
+            # Start the server with npm
+            npm start
           EOF
