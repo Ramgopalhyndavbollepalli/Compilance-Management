@@ -62,7 +62,7 @@ The dashboard supports three types of users, each with different levels of acces
 
 1. **Clone Repository**:
    ```bash
-   git clone https://github.com/your-username/Compliance-Management-Dashboard.git
+   git clone https://github.com/ramgopalhyndavbollepalli/Compliance-Management-Dashboard.git
    cd Compliance-Management-Dashboard
    ```
 
