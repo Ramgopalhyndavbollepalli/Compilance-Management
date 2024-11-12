@@ -18,30 +18,18 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Debug: Verify Node Version and Files
-        run: |
-          echo "Node version:"
-          node -v
-          echo "NPM version:"
-          npm -v
-          echo "Listing project files:"
-          ls -al
-
       - name: Configure SSH Key for EC2 Access
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          echo "Setting up SSH private key..."
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' | awk '{gsub(/\\n/,"\n")}1' > private_key
           chmod 600 private_key
-          echo "SSH key configured."
 
       - name: Debug: Verify SSH Connection to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          echo "Attempting SSH connection to EC2 instance..."
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "echo 'SSH connection successful.'"
 
       - name: Clone Repository Directly on EC2
@@ -50,14 +38,12 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           GITHUB_REPO: "https://github.com/Ramgopalhyndavbollepalli/Compilance-Management.git"
         run: |
-          echo "Cloning repository on EC2 instance..."
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
             cd /home/ubuntu
             rm -rf Compilance-Management
             git clone $GITHUB_REPO
             cd Compilance-Management
             npm install
-            echo "Repository cloned and dependencies installed."
           EOF
 
       - name: Start Application on EC2
@@ -65,11 +51,9 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          echo "Starting application on EC2 instance..."
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
             cd /home/ubuntu/Compilance-Management
             npm start &
-            echo "Application started."
           EOF
           
       - name: Final Debug: Check Running Processes on EC2
@@ -77,5 +61,4 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          echo "Checking running processes on EC2 instance..."
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "ps aux | grep 'node'"
