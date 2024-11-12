@@ -55,7 +55,7 @@ jobs:
             cd /home/ubuntu/Compilance-Management
             npm start &
           EOF
-          
+
       - name: Final Debug: Check Running Processes on EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
