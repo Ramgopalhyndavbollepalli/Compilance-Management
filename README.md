@@ -1,70 +1,199 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Compliance Management Dashboard Documentation
 
-## Available Scripts
+## Table of Contents
+1. [Project Overview](#project-overview)
+2. [Technologies Used](#technologies-used)
+3. [Installation and Setup](#installation-and-setup)
+4. [User Guide](#user-guide)
+5. [Feature Walkthrough](#feature-walkthrough)
+6. [System Architecture](#system-architecture)
+7. [Troubleshooting and FAQ](#troubleshooting-and-faq)
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Project Overview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The **Compliance Management Dashboard** is a cloud-based application that simplifies the management of compliance policies, audit logging, user management, and reporting for organizations. Designed to ensure seamless compliance management, the dashboard offers real-time monitoring and detailed insights to assist in meeting organizational and regulatory compliance requirements.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Key Features
+- **Compliance Policy Management**: Create, edit, and enforce compliance policies across resources.
+- **User Management**: Manage different user roles and permissions for enhanced security.
+- **Notifications**: Get alerts for policy violations, user actions, and other critical events.
+- **Audit Logging**: Track actions and policy compliance for transparency and record-keeping.
+- **Reporting**: Generate detailed compliance and activity reports.
 
-### `npm test`
+### User Roles
+The dashboard supports three types of users, each with different levels of access:
+1. **Admin User**: Full access, including policy management, audit logs, and report generation.
+2. **Editor**: Manages user accounts and permissions, configures notifications.
+3. **Viewer**: Read-only access to compliance status and notifications.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Technologies Used
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Frontend
+- **React** with CSS and Bootstrap or Material-UI
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Backend
+- **Flask** with SQLAlchemy ORM
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Cloud Services
+- **AWS**: EC2, Aurora Serverless or DynamoDB, Lambda, CloudWatch, Config, IAM, Security Hub
 
-### `npm run eject`
+### DevOps
+- **CI/CD**: GitHub Actions
+- **Infrastructure as Code**: CloudFormation or Terraform
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Documentation
+- **Markdown** for detailed documentation
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Installation and Setup
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Prerequisites
+- **Node.js** and **npm** for frontend setup
+- **AWS Account** with configured IAM roles and permissions
+- **GitHub Account** with access to repository secrets for deployment
 
-## Learn More
+### Steps
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. **Clone Repository**:
+   ```bash
+   git clone https://github.com/your-username/Compliance-Management-Dashboard.git
+   cd Compliance-Management-Dashboard
+   ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+2. **Setup Environment**:
+   - Add environment variables for AWS and other secrets.
+   - For EC2 deployment, configure `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `SSH_PRIVATE_KEY`, `EC2_HOST`, `EC2_USER`, and `EC2_APP_DIR` in GitHub repository secrets.
 
-### Code Splitting
+3. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+4. **Deployment**:
+   - GitHub Actions CI/CD pipeline is set to deploy changes on each push to the `main` branch. Refer to the `.github/workflows/deploy-to-ec2.yml` for workflow details.
+   - The pipeline automates code deployment, server restart, and logging setup.
 
-### Analyzing the Bundle Size
+5. **Configure AWS Services**:
+   - Ensure **AWS Config** and **Security Hub** are integrated and monitoring for compliance.
+   - Configure **CloudWatch Logs** for capturing application and server logs.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## User Guide
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Basic Navigation
+1. **Login**: Each user needs valid credentials. Different users will have different access levels.
+2. **Dashboard**: The main page provides a summary of compliance metrics, recent activities, and alerts.
 
-### Advanced Configuration
+### User Tasks
+- **Compliance Officers**: Can create policies, view logs, and access detailed reports.
+- **Administrators**: Manage users and notifications, configuring access and permissions as needed.
+- **Standard Users**: Have read-only access to view compliance statuses and notifications.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Notifications Management
+- Users will receive alerts on the **Notifications Page** for important events, including:
+  - Non-compliance incidents
+  - User actions
+  - Policy updates
 
-### Deployment
+### Accessing Audit Logs
+- Go to the **Audit Logs Page** to view a history of actions taken within the system. This is essential for tracking compliance and troubleshooting user actions.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## Feature Walkthrough
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Dashboard Page
+- **Description**: Displays overall compliance metrics, active alerts, and summaries.
+- **Widgets**: Graphs and tables show compliance status across resources and policies.
+
+### Resource Details Page
+- **Purpose**: Provides specific information about resources, their compliance status, and associated policies.
+- **Content**: Includes images, descriptions, and documents related to each resource.
+
+### Compliance Policy Management Page
+- **Functionality**: Create, modify, and delete compliance policies.
+- **Policy Management**:
+  1. Click on "Add Policy."
+  2. Provide the necessary details, including policy name, description, and conditions.
+  3. Save changes to activate the policy.
+
+### User Management Page
+- **Roles and Permissions**: Define user roles (Compliance Officer, Administrator, Standard User) with access levels.
+- **Adding Users**: Admins can add users, assign roles, and manage permissions from this page.
+
+### Notifications Page
+- **Alerts**: Users receive notifications for compliance issues, user actions, and other events.
+- **Managing Alerts**: Users can view, filter, and dismiss notifications as needed.
+
+### Audit Logs Page
+- **Description**: Comprehensive log of all actions within the system.
+- **Usage**: Logs can be filtered and exported for analysis.
+
+### Compliance Reporting Page
+- **Purpose**: Generate reports on compliance levels and resource activities.
+- **Report Types**: Summaries, detailed reports, and exportable formats are available.
+
+### Settings Page
+- **Configuration Options**: Customize notifications, themes, language, and account preferences.
+
+---
+
+## System Architecture
+
+1. **Frontend**: Built with React and styled using CSS with Bootstrap/Material-UI for a responsive, user-friendly interface.
+2. **Backend**: Flask backend handles API requests and interacts with AWS for data storage and compliance checks.
+3. **Database**: AWS Aurora Serverless or DynamoDB for storing user and compliance data.
+4. **AWS Integration**:
+   - **Lambda** functions automate compliance checks and policy updates.
+   - **CloudWatch** for logging, **Config** for tracking resources, and **Security Hub** for continuous monitoring.
+
+---
+
+## Troubleshooting and FAQ
+
+### Common Issues
+- **Deployment Failures**: Ensure GitHub Secrets are correctly configured and IAM permissions are set up.
+- **Permission Denied on EC2**: Verify that your SSH keys are correctly formatted and that EC2 security groups allow SSH access.
+- **Notifications Not Displaying**: Confirm that policies and rules are configured in AWS Config and Security Hub.
+
+### Frequently Asked Questions
+
+1. **How do I add a new policy?**
+   - Go to the **Compliance Policy Management Page** and click "Add Policy."
+
+2. **What permissions do Standard Users have?**
+   - Standard Users have read-only access to view compliance status and alerts but cannot modify policies or settings.
+
+3. **How are audit logs maintained?**
+   - Logs are automatically recorded and can be viewed in the **Audit Logs Page**.
+
+---
+
+
+### Sample Markdown Section for Compliance Policy Management
+
+```markdown
+# Compliance Policy Management
+
+The Compliance Policy Management page allows authorized users to create, edit, and manage compliance policies that ensure organizational standards are met.
+
+## Key Features
+- **Add New Policy**: Define compliance conditions for monitoring.
+- **Edit Policy**: Update existing policies and adjust conditions.
+- **Delete Policy**: Remove outdated or redundant policies.
+
+## Creating a New Policy
+1. Navigate to the **Compliance Policy Management** page.
+2. Click "Add Policy."
+3. Fill in the following details:
+   - **Policy Name**: Unique identifier for the policy.
+   - **Conditions**: Define conditions to monitor and enforce compliance.
+4. Save the policy.
+
