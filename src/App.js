@@ -23,6 +23,9 @@ function App() {
           <Route path="/signup" element={<Signup />} />
 
           <Route element={<SidebarLayout />}>
+          <Route element={<ProtectedRoute requiredRoles={['admin', 'editor', 'viewer']} />}>
+              <Route path="/" element={<Dashboard />} />
+            </Route>
             <Route element={<ProtectedRoute requiredRoles={['admin', 'editor', 'viewer']} />}>
               <Route path="/dashboard" element={<Dashboard />} />
             </Route>

@@ -17,6 +17,7 @@ function Login() {
       const response = await axios.post('/api/login', formData);
       if (response.status === 200) {
         // Extract the access token, user role, and ID from the response
+        console.log("response.data", response.data)
         const { access_token, role, user_id } = response.data;
 
         console.log("DEBUG: Received token, role, user ID:", access_token, role, user_id);
