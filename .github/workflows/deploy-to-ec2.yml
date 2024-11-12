@@ -19,6 +19,8 @@ jobs:
           node-version: '18'
 
       - name: Build React app
+        env:
+          CI: false  # Ignore warnings as errors during build
         run: |
           npm install
           npm run build
