@@ -79,4 +79,3 @@ jobs:
         run: |
           echo "Checking running processes on EC2 instance..."
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "ps aux | grep 'node'"
-
