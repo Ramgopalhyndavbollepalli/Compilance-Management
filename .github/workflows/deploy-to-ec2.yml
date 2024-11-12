@@ -1,3 +1,5 @@
+env:
+  CI: false
 name: Deploy to EC2
 
 on:
@@ -21,7 +23,11 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "git -C /home/ubuntu/Compilance-Management pull || git clone https://github.com/username/Compilance-Management.git /home/ubuntu/Compilance-Management"
+          ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST "
+            cd /home/ubuntu/Compilance-Management || git clone https://github.com/username/Compilance-Management.git /home/ubuntu/Compilance-Management
+            cd /home/ubuntu/Compilance-Management
+            git pull origin master
+          "
 
       - name: Start Server
         env:
@@ -32,5 +38,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
             cd /home/ubuntu/Compilance-Management
             npm install
-            npm start
+            nohup npm start > app.log 2>&1 &
           EOF
