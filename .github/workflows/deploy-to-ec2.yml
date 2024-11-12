@@ -32,11 +32,11 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           EC2_APP_DIR: "/home/ubuntu/Compilance-Management"
         run: |
-          # Create a private key file for SSH
+          # Save the SSH private key, ensuring it’s correctly formatted
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > private_key
           chmod 600 private_key
 
-          # Transfer build files to EC2 instance with verbose output for debugging
+          # Use scp with verbose output for debugging
           scp -v -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i private_key -r ./build/* $EC2_USER@$EC2_HOST:$EC2_APP_DIR
 
       - name: Start Server with npm
@@ -49,6 +49,5 @@ jobs:
           # SSH into the EC2 instance and start the server
           ssh -v -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << EOF
             cd $EC2_APP_DIR
-            # Start the server with npm
             npm start
           EOF
